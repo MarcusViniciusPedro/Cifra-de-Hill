@@ -1,0 +1,66 @@
+RELATÓRIO - CIFRA DE HILL GENERALIZADA
+==================================================
+
+1. PARÂMETROS
+  Módulo m = 26
+  Ordem n = 2
+
+2. MATRIZ-CHAVE K
+       3     3
+       2     5
+
+3. VALIDAÇÃO DA CHAVE
+  det(K) = 9  (mod 26) = 9
+  mdc(9, 26) = 1  -> coprimo, logo K é invertível.
+
+4. CÁLCULO DA INVERSA MODULAR
+  Fórmula: K^-1 = det(K)^-1 * adj(K)  (mod m)
+
+  4.1 Inverso de det = 9 módulo 26 (Euclides):
+    26 = 2 * 9 + 8
+    9 = 1 * 8 + 1
+    8 = 8 * 1 + 0
+    Retrocedendo, obtém-se det^-1 = 3  (confere: 9 * 3 = 27 ≡ 1 mod 26)
+
+  4.2 Matriz de cofatores C[i][j] = (-1)^(i+j) * det(menor_ij):
+       5    -2
+      -3     3
+
+  4.3 Adjunta = transposta dos cofatores:
+       5    -3
+      -2     3
+
+  4.4 K^-1 = 3 * adj(K) (mod 26):
+      15    17
+      20     9
+
+  4.5 Conferência: K * K^-1 (mod m) =
+       1     0
+       0     1
+
+5. FLUXO DE TRANSFORMAÇÃO DO TEXTO
+  Mensagem original: HELP
+  Em números (4): [7, 4, 11, 15]
+  Padding (estilo PKCS7): +2 valores iguais a 2
+  Após padding (6): [7, 4, 11, 15, 2, 2]
+  Divisão em 3 bloco(s) de tamanho 2
+
+  Bloco claro  --(K)-->  Bloco cifrado  --(K^-1)-->  Decifrado
+  [7, 4] -> [7, 8] -> [7, 4]
+  [11, 15] -> [0, 19] -> [11, 15]
+  [2, 2] -> [12, 14] -> [2, 2]
+
+6. EXEMPLO DETALHADO (1º bloco)
+  P = [7, 4]
+  C[0] = 3*7 + 3*4 = 33 ≡ 7 (mod 26)
+  C[1] = 2*7 + 5*4 = 34 ≡ 8 (mod 26)
+  C = [7, 8]
+  P'[0] = 15*7 + 17*8 = 241 ≡ 7 (mod 26)
+  P'[1] = 20*7 + 9*8 = 212 ≡ 4 (mod 26)
+
+7. VERIFICAÇÃO DE INTEGRIDADE
+  Mensagem cifrada : HIATMO
+  Mensagem decifrada: HELP
+  Comparação direta: iguais
+  Checksum original = 118, decifrada = 118
+  Resultado: INTEGRIDADE OK
