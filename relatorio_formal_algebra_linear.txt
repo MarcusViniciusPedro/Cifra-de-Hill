@@ -1,71 +1,86 @@
 ================================================================================
-        RELATÓRIO FORMAL - A ÁLGEBRA LINEAR APLICADA À CRIPTOGRAFIA
+        RELATÓRIO - A ÁLGEBRA LINEAR APLICADA À CRIPTOGRAFIA
                    Estudo de Caso: A Cifra de Hill
 ================================================================================
 
-Disciplina ...: Vetores, Geometria Analítica e Álgebra Linear
-Aplicação ....: Tecnologia da Informação — Criptografia Simétrica
-Objeto .......: Programa "Cifra de Hill Generalizada" (hill.py)
-
-
---------------------------------------------------------------------------------
-1. INTRODUÇÃO — POR QUE ÁLGEBRA LINEAR VIRA CRIPTOGRAFIA
---------------------------------------------------------------------------------
-
-A Cifra de Hill, criada por Lester S. Hill em 1929, foi uma das primeiras
-cifras a tratar a mensagem não como letras isoladas, mas como VETORES, e a
-chave secreta como uma TRANSFORMAÇÃO LINEAR representada por uma MATRIZ.
-
-Esse é exatamente o ponto em que a matéria da disciplina encontra a TI: todo o
-conteúdo de Vetores, Geometria e Álgebra Linear — vetores, matrizes,
-multiplicação matricial, determinante, matriz inversa e transformações
-lineares — deixa de ser abstrato e passa a resolver um problema concreto de
-computação: proteger a informação.
-
-A ideia central é simples e elegante:
-
-    CIFRAR   = aplicar uma transformação linear T(P) = K · P
-    DECIFRAR = aplicar a transformação INVERSA  T⁻¹(C) = K⁻¹ · C
-
-Se a transformação linear K embaralha o texto, apenas quem conhece a
-transformação inversa K⁻¹ consegue desfazer o embaralhamento. A segurança da
-cifra, portanto, repousa inteiramente sobre um teorema de Álgebra Linear: uma
-matriz só pode ser desfeita se for INVERSÍVEL.
-
-A única adaptação que a TI exige é trabalhar com ARITMÉTICA MODULAR (Z_m), pois
-o computador precisa que os números "deem a volta" dentro de um alfabeto finito
-(0 a 25 para letras, 0 a 255 para bytes). Isso muda a forma de calcular a
-inversa, mas não muda a Álgebra Linear por trás dela.
-
+Disciplina: Vetores, Geometria Analítica e Álgebra Linear
+Aplicação: Tecnologia da Informação — Criptografia Simétrica
+Objeto: Programa "Cifra de Hill Generalizada"
 
 --------------------------------------------------------------------------------
-2. OS CONCEITOS DA DISCIPLINA E ONDE ELES APARECEM NO CÓDIGO
+1. INTRODUÇÃO
 --------------------------------------------------------------------------------
 
-  CONCEITO DA MATÉRIA            |  USO NA CRIPTOGRAFIA (hill.py)
-  ------------------------------ | --------------------------------------------
-  Vetor                          |  Cada bloco de letras é um vetor coluna P
-  Espaço vetorial sobre Z_m      |  O conjunto de todas as mensagens possíveis
-  Matriz                         |  A chave secreta K (n x n)
-  Transformação linear           |  A operação de cifrar: C = K · P
-  Multiplicação matriz x vetor   |  O "motor" da cifra (função núcleo)
-  Determinante                   |  Decide se a chave pode ser usada
-  Matriz de cofatores            |  Etapa para montar a inversa
-  Matriz transposta              |  Etapa para montar a adjunta
-  Matriz adjunta                 |  Caminho para a inversa sem divisão
-  Matriz inversa (K⁻¹)           |  A operação de decifrar
-  Matriz identidade              |  Prova de que K⁻¹ está correta (K·K⁻¹ = I)
+A Cifra de Hill, criada por Lester S. Hill em 1929, foi uma das primeiras cifras a tratar 
+a mensagem não como letras isoladas, mas como vetores, e como uma transformação linear 
+representada por uma matriz.
 
-Toda a disciplina está representada neste pequeno programa. A seguir, cada
-passo é acompanhado com os cálculos reais usados pelo exemplo do relatório.
+É nesse ínterim que a disciplina de Vetores, Geometria Analítica e Álgebra Linear 
+encontram-se no meio computacional por meio de vetores, matrizes, multiplicação matricial, 
+determinante, matriz inversa e transformações lineares, partindo de uma visão apenas 
+teórica para algo concreto servindo para criptografar e proteger dados/informações.
 
+Conceito central:
+
+    CIFRAR = aplicar uma transformação linear T(P) = K · P
+    DECIFRAR = aplicar a transformação inversa  T⁻¹(C) = K⁻¹ · C
+
+Se a transformação linear K codfica o texto, apenas quem conhece a transformação 
+inversa K⁻¹ consegue desfazer o embaralhamento. A segurança da cifra, portanto, 
+figura-se inteiramente sobre um teorema de Álgebra Linear: uma matriz só pode ser 
+desfeita se for inversível.
+
+A única adaptação que a TI exige é trabalhar com aritmética modular (Z_m), pois
+o computador precisa que os números "realizem uma volta" dentro de um alfabeto finito
+(0 a 25 para letras, 0 a 255 para bytes). Isso muda a forma de calcular a inversa, 
+mas não muda a Álgebra Linear por trás dela.
 
 --------------------------------------------------------------------------------
-3. PASSO A PASSO DO PROGRAMA, COM OS CÁLCULOS
+2. OS CONCEITOS E ONDE SÃO USADOS NA CRIPTOGRAFIA DE HILL
 --------------------------------------------------------------------------------
 
-Para que o relatório seja concreto, usamos exatamente o mesmo exemplo já
-executado no programa:
+  |-------------------------------|---------------------------------------------|
+  |           CONCEITO            |            USO NA CRIPTOGRAFIA              |
+  |-------------------------------|---------------------------------------------|
+  |Vetor                          |  Cada bloco de letras é um vetor coluna P   |
+  |Espaço vetorial sobre (Z_m)    |  O conjunto de todas as mensagens possíveis | 
+  |Matriz                         |  A chave secreta K (n x n)                  |
+  |Transformação linear           |  A operação de cifrar: C = K · P            |
+  |Multiplicação matriz x vetor   |  O princípio da cifra (função núcleo)       |
+  |Determinante                   |  Decide se a chave pode ser usada           |
+  |Matriz de cofatores            |  Etapa para montar a inversa                |
+  |Matriz transposta              |  Etapa para montar a adjunta                |
+  |Matriz adjunta                 |  Caminho para a inversa sem divisão         | 
+  |Matriz inversa (K⁻¹)           |  A operação de decifrar                     |
+  |Matriz identidade              |  Prova de que K⁻¹ está correta (K·K⁻¹ = I)  |
+  |-------------------------------|---------------------------------------------|
+
+ * Vetor: é um segmento de reta orientado que possui três características principais, são elas -
+   módulo (tamanho ou intensidade), direção (horizontal, vertical, etc) e sentido.
+ * Espaço Vetorial: vetores, associado a um corpo K (geralmente os números reais ou complexos, 
+   cujos elementos são chamados de escalares.
+ * Matriz: é uma tabela organizada de números ou outros objetos matemáticos dispostos em linhas 
+   (na horizontal) e colunas (na vertical).
+ * Transformação Linear: é um tipo especial de função que liga dois espaços vetoriais, preservando 
+   as operações básicas da álgebra linear: a adição de vetores e a multiplicação por um escalar.
+ * Multiplicação Matriz x Vetor: é uma operação da álgebra linear em que uma matriz A (de tamanho m x n) 
+   é multiplicada por um vetor coluna x (de tamanho n x 1), resultando em um novo vetor coluna b 
+   (de tamanho m x 1).
+ * Determinante: é um número real (ou escalar) único associado a uma matriz quadrada.
+ * Matriz de Cofatores: chamamos de matriz dos cofatores, e representamos por C a matriz formada por 
+   todos os cofatores de uma matriz original A.
+ * Matriz Transposta: é a matriz obtida pela troca ordenada das linhas por colunas de uma matriz original.
+ * Matriz Adjunta: é a transposta da matriz de cofatores de uma matriz quadrada.
+ * Matriz Inversa (K⁻¹): é uma matriz que, quando multiplicada pela sua matriz original (K), 
+   resulta na matriz identidade (I).
+ * Matriz Identidade: é uma matriz quadrada (mesmo número de linhas e colunas) na qual todos os elementos 
+   da diagonal principal são iguais a 1 e todos os demais elementos são iguais a 0.
+
+--------------------------------------------------------------------------------
+3. EXPLICAÇÃO DO PROGRAMA
+--------------------------------------------------------------------------------
+
+Para a exemplificação foi usado o experimento feito, encontrado no relatorio_hill.txt:
 
     Módulo (alfabeto) .... m = 26   (letras A=0, B=1, ..., Z=25)
     Ordem da matriz ...... n = 2    (vetores de 2 letras por bloco)
@@ -73,28 +88,26 @@ executado no programa:
     Matriz-chave K ....... | 3  3 |
                            | 2  5 |
 
-
 ······························································································
 PASSO 1 — A CHAVE É UMA MATRIZ (a transformação linear)
 ······························································································
 
-O usuário escolhe uma matriz quadrada K de ordem n. Essa matriz É a chave
-secreta. Do ponto de vista da Álgebra Linear, K representa uma transformação
-linear que leva um vetor (bloco da mensagem) em outro vetor (bloco cifrado).
+O usuário escolhe uma matriz quadrada K de ordem n. Essa matriz É a chave secreta/criptográfica. 
+Do ponto de vista da Álgebra Linear, K representa uma transformação linear que leva um vetor 
+(bloco da mensagem) em outro vetor (bloco cifrado).
 
     K = | 3  3 |
         | 2  5 |
 
-Cada entrada é tomada módulo 26, para que a matriz "viva" dentro do alfabeto.
-
+Cada entrada é tomada módulo 26, para que a matriz esteja em conformidade com o alfabeto.
 
 ······························································································
 PASSO 2 — O DETERMINANTE DECIDE SE A CHAVE É VÁLIDA
 ······························································································
 
-Em Álgebra Linear, uma matriz só possui inversa se seu DETERMINANTE for
-diferente de zero. Na versão modular da TI, a exigência é um pouco mais forte:
-o determinante precisa ser COPRIMO com o módulo m (ou seja, mdc(det, m) = 1).
+Em Álgebra Linear, uma matriz só possui inversa se seu determinante for diferente de zero. Na 
+versão modular da TI, a exigência é mais acentuada: o determinante precisa ser coprimo (isso é, 
+quando o Máximo Divisor Comum (MDC) entre eles é igual a 1) com o módulo m (ou seja, mdc(det, m) = 1).
 
 Cálculo do determinante (matriz 2x2 => det = ad − bc):
 
@@ -106,24 +119,26 @@ Redução ao módulo:
 
 Teste de coprimalidade (Algoritmo de Euclides para o MDC):
 
-    mdc(9, 26) = 1   →  COPRIMO  →  a chave É inversível.
+    mdc(9, 26) = 1   →  coprimo  →  a chave É inversível.
 
-Interpretação para a TI: se o determinante NÃO fosse coprimo com 26, a
-transformação linear não teria inversa em Z_26, e qualquer mensagem cifrada
-com essa chave seria IMPOSSÍVEL de decifrar — perda total de informação. Por
-isso o programa recusa chaves inválidas e pede outra.
+ * O Algoritmo de Euclides baseia-se na ideia de que o MDC de dois números (A e B) é 
+   igual ao MDC entre o menor número (B) e o resto (R) da divisão do maior pelo menor.
 
+Interpretação: se o determinante não fosse coprimo com 26, a transformação linear não 
+teria inversa em Z_26, e qualquer mensagem cifrada com essa chave seria impossível de 
+decifrar, portanto teria-se uma perda total da informação criptografada. Por isso o 
+programa recusa chaves inválidas e pede outra(s).
 
 ······························································································
-PASSO 3 — CÁLCULO DA MATRIZ INVERSA MODULAR (a "chave de decifrar")
+PASSO 3 — CÁLCULO DA MATRIZ INVERSA MODULAR
 ······························································································
 
 Para decifrar precisamos de K⁻¹. Em Álgebra Linear comum usaríamos:
 
     K⁻¹ = (1 / det) · adj(K)
 
-Mas em Z_m NÃO EXISTE divisão. A TI resolve isso substituindo a divisão pelo
-INVERSO MODULAR do determinante. A fórmula usada pelo programa é:
+Mas em Z_m não existe divisão. A TI resolve isso substituindo a divisão pelo
+inverso modular do determinante. A fórmula usada pelo programa é:
 
     K⁻¹ = det⁻¹ · adj(K)   (mod m)
 
@@ -141,6 +156,11 @@ INVERSO MODULAR do determinante. A fórmula usada pelo programa é:
         det⁻¹ = 3
 
   Conferência:  9 · 3 = 27 ≡ 1 (mod 26)   ✓
+
+ * Algoritmo de Euclides Estendido: além de calcular o Máximo Divisor Comum (MDC) 
+   entre dois números inteiros a e b, ele também determina os coeficientes alpha e 
+   beta (muitas vezes chamados de x e y) que satisfazem a Identidade de Bézout 
+   (alpha · a + beta · b = mdc(a,b)).
 
   3.2) Matriz de cofatores
   ------------------------
@@ -163,20 +183,19 @@ INVERSO MODULAR do determinante. A fórmula usada pelo programa é:
         K⁻¹ = 3 · adj(K) (mod 26) = | 15   17 |
                                     | 20    9 |
 
-  3.5) Prova real com a MATRIZ IDENTIDADE
+  3.5) Prova real com a matriz identidade
   ---------------------------------------
-  Um teorema da disciplina garante que K · K⁻¹ = I. O programa verifica isso
-  numericamente como teste de sanidade:
+  A definição de uma matriz inversa na álgebra linear é definida pela fórmula
+  K · K⁻¹ = I. O programa verifica isso numericamente como teste de sanidade:
 
         K · K⁻¹ (mod 26) = | 1   0 |   =  IDENTIDADE  ✓
                            | 0   1 |
 
-  Se esse produto não desse a identidade, haveria um erro e o programa aborta
+  Se esse produto não desse a identidade, haveria um erro e o programa abortaria
   antes de gerar uma mensagem impossível de recuperar.
 
-
 ······························································································
-PASSO 4 — TEXTO VIRA VETORES (a ponte entre a língua e a matemática)
+PASSO 4 — TEXTO CODIFICADO EM VETORES
 ······························································································
 
 Matrizes só multiplicam números, mas a mensagem é texto. O programa converte
@@ -188,28 +207,32 @@ cada letra em um número (A=0 ... Z=25):
     Lista final: [7, 4, 11, 15]
 
 Preenchimento (padding estilo PKCS7): como n = 2, a mensagem precisa de uma
-quantidade PAR de números. "HELP" já tem 4 (par), mas a regra do PKCS7 sempre
-acrescenta um bloco quando necessário para evitar ambiguidade; neste caso são
+quantidade par de números. "HELP" já tem 4 (par), mas a regra do PKCS7 sempre
+acrescenta um bloco quando necessário para evitar ambiguidade, neste caso são
 adicionados 2 valores iguais a 2:
 
-    Após padding: [7, 4, 11, 15, 2, 2]
+    Após o padding: [7, 4, 11, 15, 2, 2]
 
 Divisão em blocos (vetores) de tamanho n = 2:
 
     Bloco 1 = [7, 4]        (o vetor "HE")
     Bloco 2 = [11, 15]      (o vetor "LP")
-    Bloco 3 = [2, 2]        (o vetor de padding)
+    Bloco 3 = [2, 2]        (o vetor do padding)
 
-Cada bloco é, formalmente, um VETOR do espaço Z_26². É sobre esses vetores que
-a transformação linear da chave vai agir.
+Cada bloco é, formalmente, um vetor do espaço Z_26². É sobre esses vetores que
+a transformação linear da chave irá manipular.
 
+* Padding Estilo PKCS7: é um método usado em criptografia de bloco para completar 
+  os dados quando o tamanho da mensagem original não é um múltiplo exato do tamanho 
+  do bloco exigido pelo algoritmo.
 
 ······························································································
-PASSO 5 — CIFRAR: C = K · P  (a transformação linear em ação)
+PASSO 5 — CIFRAR: C = K · P
 ······························································································
 
-Cifrar é aplicar a multiplicação matriz-vetor a cada bloco. Este é o núcleo da
-cifra. Detalhamento completo do 1º bloco P = [7, 4]:
+Cifrar é aplicar a multiplicação matriz-vetor a cada bloco (este é o núcleo da cifra). 
+
+Detalhamento completo do 1º bloco P = [7, 4]:
 
     C[0] = 3 · 7 + 3 · 4 = 21 + 12 = 33 ≡ 7  (mod 26)
     C[1] = 2 · 7 + 5 · 4 = 14 + 20 = 34 ≡ 8  (mod 26)
@@ -227,19 +250,21 @@ Convertendo de volta para letras, a mensagem cifrada é:
 
     "HELP"  →  "HIATMO"
 
-Observação importante de Álgebra Linear: repare que a letra 'E' (4) e as duas
-letras do padding viram símbolos diferentes dependendo da POSIÇÃO e do bloco.
-Isso acontece porque a transformação linear mistura as duas coordenadas do
-vetor. Essa mistura é o que dá força à cifra em comparação com cifras que
-trocam letra por letra (como a de César).
+Observação: A letra 'E' (4) e as duas letras do padding viram símbolos diferentes dependendo da 
+posição e do bloco. Isso acontece porque a transformação linear mistura as duas coordenadas do 
+vetor. Essa mistura é o diferencial dessa cifra em comparação com cifras que trocam letra por 
+letra (como a de César).
 
+ * Cifra de César: é uma cifra de substituição monoalfabética, na qual cada letra do texto original 
+   é substituída por outra que está um número fixo de posições à frente ou atrás no alfabeto.
 
 ······························································································
-PASSO 6 — DECIFRAR: P = K⁻¹ · C  (desfazendo a transformação)
+PASSO 6 — DECIFRAR: P = K⁻¹ · C
 ······························································································
 
-Decifrar é aplicar a transformação INVERSA. Detalhamento do 1º bloco cifrado
-C = [7, 8] usando K⁻¹:
+Decifrar é aplicar a transformação inversa. 
+
+Detalhamento do 1º bloco cifrado C = [7, 8] usando K⁻¹:
 
     P'[0] = 15 · 7 + 17 · 8 = 105 + 136 = 241 ≡ 7  (mod 26)
     P'[1] = 20 · 7 +  9 · 8 = 140 +  72 = 212 ≡ 4  (mod 26)
@@ -253,60 +278,47 @@ Aplicando a todos os blocos:
     [0, 19]        -------->   [11, 15]
     [12, 14]       -------->   [2, 2]
 
-Remoção do padding (lê-se o último valor, 2, e removem-se 2 elementos) e
-conversão de números para letras:
+Remoção do padding (lê-se o último valor, 2, e removem-se 2 elementos) e realiza a conversão de 
+números para letras:
 
     [7, 4, 11, 15, 2, 2]  →  remove padding  →  [7, 4, 11, 15]  →  "HELP"
 
-A mensagem original foi recuperada integralmente. Isto é a demonstração
-prática do teorema  K⁻¹ · (K · P) = (K⁻¹ · K) · P = I · P = P.
-
+A mensagem original foi recuperada integralmente. Por meio da fórmula do teorema:  
+K⁻¹ · (K · P) = (K⁻¹ · K) · P = I · P = P.
 
 ······························································································
 PASSO 7 — VERIFICAÇÃO DE INTEGRIDADE
 ······························································································
 
-O programa confirma, de duas formas, que a decifragem foi perfeita:
+O programa confirma, de duas formas, que a decifragem foi bem sucedida:
 
-    Mensagem cifrada ....: HIATMO
-    Mensagem decifrada ..: HELP
-    Comparação direta ...: iguais
-    Checksum original ...: 118
-    Checksum decifrada ..: 118
-    Resultado ...........: INTEGRIDADE OK
+    Mensagem cifrada: HIATMO
+    Mensagem decifrada: HELP
+    Comparação direta: iguais
+    Checksum original: 118
+    Checksum decifrada: 118
+    Resultado: INTEGRIDADE OK
 
-O checksum é uma soma ponderada pela posição; como a multiplicação por posição
-também detecta trocas de ordem, ele funciona como uma segunda prova de que
-nenhum bloco (vetor) foi perdido ou embaralhado no caminho.
-
+ * Checksum: é uma soma ponderada pela posição, como a multiplicação por posição também detecta 
+   trocas de ordem, ele funciona como uma segunda prova de que nenhum bloco (vetor) foi perdido 
+   ou embaralhado no caminho.
 
 --------------------------------------------------------------------------------
-4. CORRELAÇÃO FINAL — DA SALA DE AULA AO MUNDO REAL
+4. CONSIDERAÇÕES FINAIS
 --------------------------------------------------------------------------------
 
-O que foi visto na disciplina como teoria pura aparece aqui como ferramenta de
-engenharia:
+A teoria vista na disciplina pode ser aplicada a partir dos meios computacionais,
+é possível verificar algumas analogias como: vetores que deixaram de ser setas em
+um plano e tornaram-se blocos de mensagem; matrizes que não são mais tabelas de 
+números, pois passaram a ser chaves codificadas; multplicação de matrix x vetor,
+que realiza o ato de cifrar a mensagem, o determinante que detém a responsabilidade
+de determinar o critério de segurança com relação a existência da chave; a matriz
+inversa que é utilizada para decifrar a mensagem original; e, a matriz identidade
+que prova a funcionalidade do sistema.
 
-  • VETORES deixam de ser setas no plano e passam a ser blocos de mensagem.
-  • MATRIZES deixam de ser tabelas de números e passam a ser chaves secretas.
-  • A MULTIPLICAÇÃO MATRIZ x VETOR deixa de ser um exercício e passa a ser o
-    próprio ato de cifrar.
-  • O DETERMINANTE deixa de ser um número e passa a ser o critério de segurança
-    que decide se uma chave pode existir.
-  • A MATRIZ INVERSA deixa de ser um cálculo e passa a ser o único caminho
-    legítimo de recuperar a informação.
-  • A MATRIZ IDENTIDADE deixa de ser um símbolo e passa a ser a prova de
-    correção do sistema.
-
-A Cifra de Hill, embora simples e hoje insegura para uso real, continua sendo
-um dos exemplos mais claros de como a Álgebra Linear sustenta a Tecnologia da
+A Cifra de Hill, embora simples e hoje insegura para uso real, continua sendo um 
+dos exemplos mais claros de como a Álgebra Linear sustenta a Tecnologia da
 Informação. Conceitos de transformação linear, invertibilidade e aritmética
-modular são os mesmos que fundamentam a criptografia moderna (como RSA e
-curvas elípticas), onde a dificuldade de "inverter" uma operação matemática é
-precisamente o que mantém os dados seguros.
-
-Em resumo: PROTEGER INFORMAÇÃO É, NO FUNDO, UM PROBLEMA DE ÁLGEBRA LINEAR.
-
-================================================================================
-                                FIM DO RELATÓRIO
-================================================================================
+modular são os mesmos que fundamentam a criptografia moderna (como RSA e curvas 
+elípticas), onde a dificuldade de "inverter" uma operação matemática é precisamente 
+o que mantém os dados seguros.
