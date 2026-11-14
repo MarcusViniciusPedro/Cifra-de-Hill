@@ -1,0 +1,68 @@
+RELATÓRIO - CIFRA DE HILL GENERALIZADA
+==================================================
+
+1. PARÂMETROS
+  Módulo m = 26
+  Ordem n = 2
+
+2. MATRIZ-CHAVE K
+       3     3
+       2     5
+
+3. VALIDAÇÃO DA CHAVE
+  det(K) = 9  (mod 26) = 9
+  mdc(9, 26) = 1  -> coprimo, logo K é invertível.
+
+4. CÁLCULO DA INVERSA MODULAR
+  Fórmula: K^-1 = det(K)^-1 * adj(K)  (mod m)
+
+  4.1 Inverso de det = 9 módulo 26 (Euclides):
+    26 = 2 * 9 + 8
+    9 = 1 * 8 + 1
+    8 = 8 * 1 + 0
+    Retrocedendo, obtém-se det^-1 = 3  (confere: 9 * 3 = 27 ≡ 1 mod 26)
+
+  4.2 Matriz de cofatores C[i][j] = (-1)^(i+j) * det(menor_ij):
+       5    -2
+      -3     3
+
+  4.3 Adjunta = transposta dos cofatores:
+       5    -3
+      -2     3
+
+  4.4 K^-1 = 3 * adj(K) (mod 26):
+      15    17
+      20     9
+
+  4.5 Conferência: K * K^-1 (mod m) =
+       1     0
+       0     1
+
+5. FLUXO DE TRANSFORMAÇÃO DO TEXTO
+  Mensagem original: BORBOLETA
+  Em números (9): [1, 14, 17, 1, 14, 11, 4, 19, 0]
+  Padding (estilo PKCS7): +1 valores iguais a 1
+  Após padding (10): [1, 14, 17, 1, 14, 11, 4, 19, 0, 1]
+  Divisão em 5 bloco(s) de tamanho 2
+
+  Bloco claro  --(K)-->  Bloco cifrado  --(K^-1)-->  Decifrado
+  [1, 14] -> [19, 20] -> [1, 14]
+  [17, 1] -> [2, 13] -> [17, 1]
+  [14, 11] -> [23, 5] -> [14, 11]
+  [4, 19] -> [17, 25] -> [4, 19]
+  [0, 1] -> [3, 5] -> [0, 1]
+
+6. EXEMPLO DETALHADO (1º bloco)
+  P = [1, 14]
+  C[0] = 3*1 + 3*14 = 45 ≡ 19 (mod 26)
+  C[1] = 2*1 + 5*14 = 72 ≡ 20 (mod 26)
+  C = [19, 20]
+  P'[0] = 15*19 + 17*20 = 625 ≡ 1 (mod 26)
+  P'[1] = 20*19 + 9*20 = 560 ≡ 14 (mod 26)
+
+7. VERIFICAÇÃO DE INTEGRIDADE
+  Mensagem cifrada : TUCNXFRZDF
+  Mensagem decifrada: BORBOLETA
+  Comparação direta: iguais
+  Checksum original = 445, decifrada = 445
+  Resultado: INTEGRIDADE OK
