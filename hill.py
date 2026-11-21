@@ -8,19 +8,37 @@ Cifra de Hill generalizada
 - Verificação de integridade e geração de relatório (relatorio_hill.txt).
 """
 
-# ----------------------------------------------------------------------
-# 1) MATEMÁTICA BÁSICA
-# ----------------------------------------------------------------------
 def mdc(a, b):
-    """Máximo divisor comum (Algoritmo de Euclides)."""
-    a, b = abs(a), abs(b)
+    """Máximo divisor comum (Algoritmo de Euclides).
+
+    Ideia: mdc(a, b) = mdc(b, a % b). Repetimos até o resto ser 0;
+    o último valor não nulo é o MDC.
+ 
+    Função: dois números são "coprimos" quando mdc == 1.
+    Assim, é possível saber se o determinante da chave tem inverso
+    módulo m (condição para conseguir decifrar).
+    """
+    a, b = abs(a), abs(b) # trabalha só com valores positivos
     while b != 0:
-        a, b = b, a % b
+        a, b = b, a % b # (a, b) vira (b, resto da divisão)
     return a
 
 
 def euclides_estendido(a, b):
-    """Retorna (g, x, y) tal que a*x + b*y = g = mdc(a, b)."""
+    """
+    Além do MDC, devolve dois números x e y tais que:
+            a*x + b*y = mdc(a, b)
+    Retorna a tripla (g, x, y), onde g = mdc(a, b).
+ 
+    Por que isso importa: se g == 1, então a*x + b*y = 1, ou seja,
+    a*x ≡ 1 (mod b). Logo x é o INVERSO de a módulo b.
+ 
+    Como funciona: durante todo o laço, vale a invariante
+        a_atual = a_original * x0 + b_original * y0
+        b_atual = a_original * x1 + b_original * y1
+    Os pares (x0, y0) e (x1, y1) acompanham as divisões sucessivas.
+    No final, 'a' guarda o MDC e (x0, y0) são os coeficientes.
+    """
     x0, y0, x1, y1 = 1, 0, 0, 1
     while b != 0:
         q = a // b
@@ -49,22 +67,22 @@ def passos_euclides(a, m):
         x, y = y, r
     return linhas
 
-# ----------------------------------------------------------------------
-# 2) ÁLGEBRA DE MATRIZES (só com inteiros, sem divisão)
-# ----------------------------------------------------------------------
+# ÁLGEBRA DE MATRIZES (só com inteiros, sem divisão)
 def menor(M, i, j):
     """Submatriz de M sem a linha i e sem a coluna j."""
     return [linha[:j] + linha[j + 1:] for k, linha in enumerate(M) if k != i]
 
 def determinante(M):
     """Determinante por expansão de cofatores na 1ª linha (recursivo)."""
-    n = len(M)
-    if n == 1:
+    n = len(M) # ordem da matriz
+    if n == 1: # caso base 1x1
         return M[0][0]
-    if n == 2:
+    if n == 2: # caso base 2x2
         return M[0][0] * M[1][1] - M[0][1] * M[1][0]
     total = 0
-    for j in range(n):
+    for j in range(n):  # percorre as colunas da 1ª linha
+        # (-1) ** j dá +1, -1, +1, ... (sinal alternado)
+        # determinante(menor(...)) é a CHAMADA RECURSIVA com matriz menor
         total += ((-1) ** j) * M[0][j] * determinante(menor(M, 0, j))
     return total
 
@@ -72,38 +90,50 @@ def matriz_cofatores(M):
     n = len(M)
     if n == 1:
         return [[1]]
+    # compreensão de lista aninhada: i percorre as linhas, j as colunas.
     return [[((-1) ** (i + j)) * determinante(menor(M, i, j))
              for j in range(n)] for i in range(n)]
 
-
 def transposta(M):
+    # as linhas viram colunas (e vice-versa)
+    # zip(*M) "espalha" as linhas como argumentos do zip,
+    # que então agrupa os elementos de mesma posição (ou seja, por coluna)
+    # o list(col) converte cada grupo (uma tupla) de volta em # lista
     return [list(col) for col in zip(*M)]
 
 
 def matriz_adjunta(M):
-    """Adjunta = transposta da matriz de cofatores."""
+    """Adjunta = transposta da matriz de cofatores.
+    É a peça que permite calcular a inversa sem usar divisão:
+            K⁻¹ = det(K)⁻¹ * adj(K)
+    """
     return transposta(matriz_cofatores(M))
 
 
 def inversa_modular(M, m):
     """K^-1 = det^-1 * adj(K) (mod m). Retorna None se não for invertível."""
-    det = determinante(M) % m
-    det_inv = inverso_modular(det, m)
+    det = determinante(M) % m # determinante dentro de Z_m
+    det_inv = inverso_modular(det, m) # "1 / det" em Z_m
     if det_inv is None:
         return None
     adj = matriz_adjunta(M)
+    # multiplica cada elemento x da adjunta por det_inv, tudo módulo m
     return [[(det_inv * x) % m for x in linha] for linha in adj]
 
 
 def multiplica_matrizes(A, B, m):
+    # produto de duas matrizes n x n, com resultado módulo m
     n = len(A)
     return [[sum(A[i][k] * B[k][j] for k in range(n)) % m
              for j in range(n)] for i in range(n)]
 
 
 def eh_identidade(M):
+    # verifica se M é a matriz identidade (1 na diagonal, 0 no resto)
     n = len(M)
+    # all(...) devolve True só se TODAS as condições forem verdadeiras
     return all(M[i][j] == (1 if i == j else 0)
+               # a expressão (1 if i == j else 0) é 1 na diagonal e 0 fora dela
                for i in range(n) for j in range(n))
 
 
@@ -112,10 +142,8 @@ def multiplica_matriz_vetor(M, v, m):
     return [sum(M[i][j] * v[j] for j in range(len(v))) % m
             for i in range(len(M))]
 
-
-# ----------------------------------------------------------------------
-# 3) TEXTO <-> NÚMEROS
-# ----------------------------------------------------------------------
+# TEXTO <-> NÚMEROS
+# A matriz só multiplica números, então o texto precisa ser convertido
 def texto_para_numeros(texto, m):
     """m=26: A..Z -> 0..25 (ignora o que não for letra). m=256: bytes UTF-8."""
     if m == 26:
@@ -153,10 +181,7 @@ def remover_padding(nums, n):
 def dividir_em_blocos(nums, n):
     return [nums[i:i + n] for i in range(0, len(nums), n)]
 
-
-# ----------------------------------------------------------------------
-# 4) CIFRAR / DECIFRAR
-# ----------------------------------------------------------------------
+# CIFRAR / DECIFRAR
 def processar_blocos(blocos, M, m):
     """Aplica M a cada bloco (serve tanto para cifrar com K quanto
     para decifrar com K^-1)."""
@@ -174,10 +199,7 @@ def checksum(nums):
         s = (s + (i + 1) * (x + 1)) % 1000003
     return s
 
-
-# ----------------------------------------------------------------------
-# 5) ENTRADA DE DADOS
-# ----------------------------------------------------------------------
+# ENTRADA DE DADOS
 def ler_inteiro(prompt, minimo):
     while True:
         try:
@@ -210,10 +232,8 @@ def ler_matriz(n, m):
         return M
 
 
-# ----------------------------------------------------------------------
-# 6) PROGRAMA PRINCIPAL
-# ----------------------------------------------------------------------
 def fmt_matriz(M):
+    # formata uma matriz como texto, com colunas alinhadas (para o relatório)
     return "\n".join("    " + "  ".join(f"{x:4d}" for x in linha) for linha in M)
 
 
