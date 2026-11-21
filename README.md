@@ -1,7 +1,6 @@
-# – Criptografia Avançada com Matrizes (Cifra de Hill Generalizada) 
-Trabalho da disciplina Vetores, Geometria Analítica e Algebra Linear (SPOMVAL).
+# Criptografia Avançada com Matrizes (Cifra de Hill Generalizada) 
+### Trabalho da disciplina Vetores, Geometria Analítica e Algebra Linear (SPOMVAL)
 Integrantes do grupo: Valeska Felipe de Almeida, Marcus Vinicius de Souza Moraes Pedro, Ana Julia Dias Medina
----
 
 ## Manual do usuário
 
@@ -106,4 +105,3 @@ Cifra-de-Hill/
 | `relatorio_hill2.txt` | _relatorio gerado pelo programa hill.py com a palavra de exemplo BORBOLETA_ |
 | `CRIPTOGRAFIA.pdf` | _documento com os conceitos de algebra linear utilizados para o desenvolvimento da criptografia de Hill, no programa hill.py_ |
 | `README.md` | _manual do usuário_ |
-| _(outro arquivo)_ | _(preencher)_ |
